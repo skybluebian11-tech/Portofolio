@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>:root{color-scheme:light}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>SuaraKampusKahayanProject</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Source+Sans+3:wght@400;500;600&display=swap">
+<style>
+/* Layout: blog satu kolom lebar 1040px. Beranda = pengantar, survei minat (klik untuk menyaring), kartu artikel. Klik kartu membuka tampilan baca. */
+:root{
+  --bg:#eef3f0; --surface:#ffffff; --fg:#17231f; --muted:#51635b; --line:#d4dfd9;
+  --accent:#0f5f4a; --accent-fg:#ffffff; --tannin:#8a4b14; --tannin-soft:#f6e8d6;
+  --f-display:'Bricolage Grotesque',system-ui,sans-serif; --f-body:'Source Sans 3',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1815; --surface:#17241f; --fg:#e7efeb; --muted:#9bb0a7; --line:#2a3b34;
+  --accent:#58c9a2; --accent-fg:#06231a; --tannin:#e5a763; --tannin-soft:#34261a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1815; --surface:#17241f; --fg:#e7efeb; --muted:#9bb0a7; --line:#2a3b34;
+  --accent:#58c9a2; --accent-fg:#06231a; --tannin:#e5a763; --tannin-soft:#34261a; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.6;padding-inline:16px;padding-block:0 56px}
+.wrap{max-width:1040px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-display);margin:0;line-height:1.15;text-wrap:balance}
+p{margin:0}
+a,button{font-family:inherit}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-block:18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{font-family:var(--f-display);font-weight:700;font-size:1.25rem;display:flex;align-items:center;gap:10px;background:none;border:0;color:var(--fg);cursor:pointer;padding:0}
+.brand svg{width:30px;height:30px;flex:none}
+.nav{display:flex;gap:18px;font-size:.92rem}
+.nav a{color:var(--muted);text-decoration:none}
+.nav a:hover{color:var(--accent)}
+.hero{padding-block:40px 28px;max-width:70ch;display:flex;flex-direction:column;gap:14px}
+.hero h1{font-size:clamp(2rem,6vw,3.2rem);font-weight:700}
+.hero p{color:var(--muted);font-size:1.08rem}
+.tag{display:inline-block;font-size:.76rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--tannin);background:var(--tannin-soft);padding:3px 10px;border-radius:4px;width:fit-content}
+.poll{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:22px;margin-block:12px 36px}
+.poll-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline;margin-bottom:14px}
+.poll-head h2{font-size:1.25rem}
+.poll-head small{color:var(--muted)}
+.rows{display:flex;flex-direction:column;gap:6px}
+.row{display:grid;grid-template-columns:minmax(120px,190px) minmax(0,1fr) 44px;gap:12px;align-items:center;background:none;border:0;padding:6px 8px;border-radius:6px;color:var(--fg);cursor:pointer;text-align:left;font-size:.95rem}
+.row:hover{background:var(--bg)}
+.row[aria-pressed="true"]{background:var(--tannin-soft)}
+.row .track{height:12px;background:var(--line);border-radius:3px;overflow:hidden}
+.row .fill{display:block;height:100%;background:var(--accent);border-radius:3px}
+.row[aria-pressed="true"] .fill{background:var(--tannin)}
+.row .pct{font-variant-numeric:tabular-nums;text-align:right;font-weight:600}
+@media (max-width:520px){.row{grid-template-columns:minmax(0,1fr) 40px}.row .track{grid-column:1 / -1;grid-row:2}}
+.bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:18px}
+.bar h2{font-size:1.5rem}
+.search{font:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--fg);min-width:0;width:min(100%,260px)}
+.search:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.chip{font-size:.85rem;padding:6px 13px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:10px;text-align:left;cursor:pointer;color:var(--fg);min-width:0}
+.card:hover{border-color:var(--accent)}
+.card h3{font-size:1.2rem}
+.card p{color:var(--muted);font-size:.95rem}
+.meta{font-size:.82rem;color:var(--muted);margin-top:auto;padding-top:6px}
+.empty{color:var(--muted);padding:24px 0}
+.reader{max-width:68ch;margin:0 auto;padding-block:32px;display:flex;flex-direction:column;gap:18px}
+.reader h1{font-size:clamp(1.8rem,5vw,2.6rem)}
+.reader .body{display:flex;flex-direction:column;gap:16px;font-size:1.08rem}
+.reader blockquote{margin:6px 0;padding:4px 0 4px 18px;border-left:3px solid var(--tannin);font-family:var(--f-display);font-size:1.25rem;line-height:1.35}
+.back{background:none;border:0;color:var(--accent);font-weight:600;cursor:pointer;padding:0;width:fit-content;font-size:.95rem}
+.about{margin-top:56px;padding-top:28px;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px}
+.about p{color:var(--muted)}
+.about h2{font-size:1.15rem;margin-bottom:8px}
+footer{margin-top:36px;font-size:.85rem;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="top">
+    <button class="brand" id="home" type="button" aria-label="Kembali ke beranda">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="var(--accent)"/><path d="M4 21c4-4 7 3 11-1s7 3 13-1" fill="none" stroke="var(--accent-fg)" stroke-width="2.4" stroke-linecap="round"/><circle cx="22" cy="10" r="3.2" fill="var(--tannin-soft)"/></svg>
+      Suara Kampus Kahayan
+    </button>
+    <nav class="nav"><a href="#artikel">Artikel</a><a href="#tentang">Tentang</a></nav>
+  </div>
+
+  <main id="list">
+    <section class="hero">
+      <span class="tag">Blog mahasiswa · Palangka Raya</span>
+      <h1>Apa yang sedang diminati mahasiswa Palangka Raya?</h1>
+      <p>Catatan ringan tentang hobi, organisasi, usaha kecil, dan kegiatan mahasiswa di kota di tepi Sungai Kahayan. Contoh proyek: semua artikel dan angka di sini fiktif.</p>
+    </section>
+
+    <section class="poll" aria-labelledby="pollt">
+      <div class="poll-head"><h2 id="pollt">Survei minat mahasiswa</h2><small>Simulasi · 320 responden fiktif · klik baris untuk menyaring artikel</small></div>
+      <div class="rows" id="rows"></div>
+    </section>
+
+    <section id="artikel">
+      <div class="bar"><h2>Artikel terbaru</h2><input class="search" id="q" type="search" placeholder="Cari artikel" aria-label="Cari artikel"></div>
+      <div class="chips" id="chips"></div>
+      <div class="grid" id="grid"></div>
+    </section>
+
+    <section class="about" id="tentang">
+      <div><h2>Tentang blog ini</h2><p>Blog sederhana yang dibuat sebagai proyek latihan web. Isinya membahas minat mahasiswa dari berbagai kampus di Palangka Raya dengan data simulasi.</p></div>
+      <div><h2>Catatan data</h2><p>Nama penulis, persentase survei, dan seluruh isi artikel dibuat untuk contoh. Jangan dikutip sebagai hasil penelitian.</p></div>
+    </section>
+  </main>
+
+  <article class="reader" id="reader" hidden></article>
+
+  <footer>Suara Kampus Kahayan · Proyek contoh, 2026. Dibuat oleh Nadia Aulia dengan bantuan AI (Claude).</footer>
+</div>
+
+<script>
+var INTERESTS=[
+ {k:'Teknologi & Digital',v:24},{k:'Olahraga & E-sports',v:18},{k:'Kuliner & Kopi',v:15},
+ {k:'Organisasi & Sosial',v:14},{k:'Kewirausahaan',v:12},{k:'Lingkungan & Alam',v:10},{k:'Seni & Budaya',v:7}];
+var POSTS=[
+ {id:1,c:'Teknologi & Digital',t:'Belajar coding dari kamar kos: cerita mahasiswa yang menolak menunggu mata kuliah',a:'Rizky Pratama',d:'3 Sep 2026',m:4,
+  ex:'Semakin banyak mahasiswa non-informatika belajar pemrograman lewat video dan komunitas daring.',
+  b:['Rizky mulai belajar HTML pada semester tiga. Jurusannya bukan informatika, dan kampusnya belum punya mata kuliah pemrograman untuk jurusannya. Ia memakai ponsel dan laptop bekas.','Cerita seperti ini makin sering terdengar. Grup chat angkatan berubah menjadi tempat bertukar tautan tutorial, dan beberapa mahasiswa mulai menerima proyek situs kecil dari warung dan toko di sekitar kampus.',{q:'Yang sulit bukan materinya. Yang sulit adalah menjaga kebiasaan belajar tiap hari.'},'Kendala yang paling sering disebut adalah sinyal internet yang tidak stabil dan kurangnya teman diskusi. Karena itu beberapa mahasiswa mulai menggelar pertemuan belajar bersama setiap minggu di perpustakaan kampus.']},
+ {id:2,c:'Olahraga & E-sports',t:'Turnamen futsal antarfakultas dan lonjakan peminat e-sports di kampus',a:'Dewi Anggraini',d:'28 Agu 2026',m:3,
+  ex:'Lapangan futsal tetap ramai, tetapi turnamen game seluler kini menarik jumlah peserta yang hampir sama.',
+  b:['Dua jenis kegiatan ini sekarang berbagi penonton yang sama. Mahasiswa yang sore harinya bermain futsal sering juga ikut tim game pada malam hari.','Panitia turnamen mengaku lebih mudah mencari peserta e-sports karena pendaftarannya bisa dilakukan lewat ponsel dan pertandingannya bisa disiarkan langsung.','Tantangan bersama dari keduanya adalah pendanaan. Hampir semua turnamen mengandalkan iuran peserta dan sponsor usaha lokal.']},
+ {id:3,c:'Kuliner & Kopi',t:'Kedai kopi sebagai ruang kerja kedua mahasiswa',a:'Mega Lestari',d:'21 Agu 2026',m:4,
+  ex:'Mengerjakan tugas, rapat organisasi, dan berdiskusi: kedai kopi punya peran yang melampaui minuman.',
+  b:['Jam paling ramai kedai kopi dekat kampus bukan sore, melainkan pukul sembilan malam, saat tugas kelompok mendekati tenggat.','Pemilik kedai menyebut pelanggan mahasiswa sering memesan satu minuman dan duduk berjam-jam. Beberapa kedai menanggapinya dengan menyediakan colokan listrik dan paket belajar yang murah.',{q:'Kami lebih suka mereka datang dan betah daripada sering datang tapi hanya sebentar.'},'Tren ini ikut mendorong mahasiswa membuka usaha kecil minuman sendiri, dari kopi susu botolan sampai es teh racikan.']},
+ {id:4,c:'Organisasi & Sosial',t:'Mengapa organisasi kampus tetap diminati meski jadwal kuliah padat',a:'Andi Saputra',d:'14 Agu 2026',m:5,
+  ex:'Mahasiswa menyebut jejaring dan pengalaman memimpin sebagai alasan utama bertahan di organisasi.',
+  b:['Banyak mahasiswa mengaku ikut organisasi pada semester awal karena ajakan teman. Yang bertahan biasanya mereka yang menemukan peran yang cocok.','Kegiatan bakti sosial, seminar, dan pelatihan kepemimpinan menjadi daya tarik utama. Sebagian mahasiswa menilai pengalaman itu sama pentingnya dengan nilai di transkrip.','Keluhan yang sering muncul adalah benturan jadwal rapat dengan jam kuliah. Beberapa organisasi mulai memakai rapat daring singkat untuk mengatasinya.']},
+ {id:5,c:'Kewirausahaan',t:'Jualan lewat media sosial: usaha kecil mahasiswa yang tumbuh dari kos',a:'Siti Nurhaliza',d:'7 Agu 2026',m:4,
+  ex:'Dari camilan sampai jasa desain, usaha mahasiswa kini lebih banyak berawal dari ponsel.',
+  b:['Modal awal sering kecil: beberapa ratus ribu rupiah dan satu akun media sosial. Pembeli pertama biasanya teman sekelas dan anak kos sebelah.','Produk yang bertahan umumnya yang punya ciri khas lokal, misalnya camilan berbahan hasil sungai atau kerajinan bermotif Dayak.','Pelaku usaha mengaku paling kesulitan dalam pembukuan. Mereka mencampur uang usaha dengan uang jajan sehingga sulit mengetahui untung sebenarnya.']},
+ {id:6,c:'Lingkungan & Alam',t:'Relawan lingkungan: dari bersih sungai hingga edukasi kebakaran lahan',a:'Fajar Nugroho',d:'30 Jul 2026',m:5,
+  ex:'Isu lahan gambut dan asap membuat sebagian mahasiswa terjun sebagai relawan.',
+  b:['Kota yang berada di wilayah gambut punya cerita tersendiri soal musim kemarau dan asap. Pengalaman itu mendorong sebagian mahasiswa aktif di komunitas lingkungan.','Kegiatan yang paling rutin adalah bersih sungai dan penanaman pohon. Beberapa komunitas juga memberi penyuluhan ke sekolah tentang bahaya membakar lahan.',{q:'Kami tumbuh dengan asap setiap kemarau. Rasanya wajar kalau ingin ikut mengubahnya.'},'Relawan berharap kegiatan seperti ini mendapat dukungan jadwal dan pendanaan dari kampus.']},
+ {id:7,c:'Seni & Budaya',t:'Musik dan tari tradisional di tengah selera anak muda',a:'Putri Maharani',d:'22 Jul 2026',m:3,
+  ex:'Sanggar kampus berusaha menyatukan budaya daerah dengan gaya tampil yang akrab bagi generasi sekarang.',
+  b:['Peminat seni budaya memang yang paling sedikit dalam survei contoh ini, tetapi kelompoknya sangat aktif dan solid.','Sanggar kampus mulai merekam latihan dan membagikannya sebagai video pendek. Cara ini membuat tari dan musik tradisional lebih dikenal di luar lingkungan kampus.','Tantangannya adalah regenerasi. Anggota senior lulus lebih cepat daripada anggota baru yang bergabung.']}
+];
+var state={cat:null,q:''};
+var $=function(id){return document.getElementById(id)};
+function esc(s){return s.replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
+
+function polls(){
+  $('rows').innerHTML=INTERESTS.map(function(i){
+    return '<button type="button" class="row" data-k="'+i.k+'" aria-pressed="'+(state.cat===i.k)+'"><span>'+esc(i.k)+'</span><span class="track"><span class="fill" style="width:'+(i.v/24*100)+'%"></span></span><span class="pct">'+i.v+'%</span></button>';
+  }).join('');
+  $('rows').querySelectorAll('.row').forEach(function(b){b.onclick=function(){setCat(state.cat===b.dataset.k?null:b.dataset.k)}});
+}
+function chips(){
+  var all=[null].concat(INTERESTS.map(function(i){return i.k}));
+  $('chips').innerHTML=all.map(function(k){
+    return '<button type="button" class="chip" data-k="'+(k||'')+'" aria-pressed="'+(state.cat===k)+'">'+(k?esc(k):'Semua')+'</button>';
+  }).join('');
+  $('chips').querySelectorAll('.chip').forEach(function(b){b.onclick=function(){setCat(b.dataset.k||null)}});
+}
+function setCat(k){state.cat=k;polls();chips();grid()}
+function grid(){
+  var q=state.q.toLowerCase();
+  var list=POSTS.filter(function(p){
+    return (!state.cat||p.c===state.cat)&&(!q||(p.t+' '+p.ex+' '+p.c).toLowerCase().indexOf(q)>-1);
+  });
+  $('grid').innerHTML=list.length?list.map(function(p){
+    return '<button type="button" class="card" data-id="'+p.id+'"><span class="tag">'+esc(p.c)+'</span><h3>'+esc(p.t)+'</h3><p>'+esc(p.ex)+'</p><span class="meta">'+esc(p.a)+' · '+p.d+' · '+p.m+' menit baca</span></button>';
+  }).join(''):'<p class="empty">Belum ada artikel yang cocok dengan pencarian ini.</p>';
+  $('grid').querySelectorAll('.card').forEach(function(c){c.onclick=function(){openPost(+c.dataset.id)}});
+}
+function openPost(id){
+  var p=POSTS.filter(function(x){return x.id===id})[0];
+  $('reader').innerHTML='<button type="button" class="back" id="back">← Kembali ke artikel</button><span class="tag">'+esc(p.c)+'</span><h1>'+esc(p.t)+'</h1><div class="meta" style="margin:0;padding:0">'+esc(p.a)+' · '+p.d+' · '+p.m+' menit baca</div><div class="body">'+
+   p.b.map(function(x){return typeof x==='string'?'<p>'+esc(x)+'</p>':'<blockquote>'+esc(x.q)+'</blockquote>'}).join('')+'</div><p class="meta">Artikel contoh. Isi dan narasumber fiktif.</p>';
+  $('list').hidden=true;$('reader').hidden=false;window.scrollTo(0,0);
+  $('back').onclick=close;
+}
+function close(){$('reader').hidden=true;$('list').hidden=false;window.scrollTo(0,0)}
+$('home').onclick=close;
+$('q').oninput=function(){state.q=this.value;grid()};
+polls();chips();grid();
+</script>
+
+</body>
+</html>
