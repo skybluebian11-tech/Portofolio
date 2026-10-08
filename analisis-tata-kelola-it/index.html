@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>:root{color-scheme:light}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>AnalisisTataKelolaIT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:wght@500;600&display=swap">
+<style>
+/* Layout: laporan asesmen satu halaman. Ringkasan (skor + radar) di atas, detail per domain di tab di bawahnya. */
+:root{
+  --bg:#f4f6f8; --surface:#ffffff; --fg:#14202b; --muted:#566574; --line:#d9e0e6;
+  --accent:#0b5c78; --accent-soft:#e1f0f5; --target:#c2410c;
+  --good:#1f7a4d; --good-bg:#e2f3ea; --warn:#9a6700; --warn-bg:#fbf0d3; --crit:#b42318; --crit-bg:#fde8e6;
+  --f-display:'IBM Plex Serif',Georgia,serif; --f-body:'IBM Plex Sans',system-ui,sans-serif; --f-mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f171e; --surface:#16212b; --fg:#e6edf2; --muted:#9aabb9; --line:#2a3947;
+  --accent:#5cc0e0; --accent-soft:#16323e; --target:#f59e6b;
+  --good:#5fd39a; --good-bg:#14332a; --warn:#f0c04d; --warn-bg:#3a2f12; --crit:#ff8a7f; --crit-bg:#3d1b18; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f171e; --surface:#16212b; --fg:#e6edf2; --muted:#9aabb9; --line:#2a3947;
+  --accent:#5cc0e0; --accent-soft:#16323e; --target:#f59e6b;
+  --good:#5fd39a; --good-bg:#14332a; --warn:#f0c04d; --warn-bg:#3a2f12; --crit:#ff8a7f; --crit-bg:#3d1b18; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.55;padding-inline:16px;padding-block:28px 56px}
+.wrap{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1,h2,h3{font-family:var(--f-display);font-weight:600;margin:0;text-wrap:balance;line-height:1.2}
+h1{font-size:clamp(1.6rem,4.5vw,2.3rem)}
+h2{font-size:1.3rem}
+h3{font-size:1.05rem}
+p{margin:0}
+.eyebrow{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted)}
+header{display:flex;flex-direction:column;gap:12px}
+header p.lead{max-width:65ch;color:var(--muted)}
+.notice{border:1px dashed var(--line);border-radius:6px;padding:10px 14px;font-size:.85rem;color:var(--muted);max-width:75ch}
+.profile{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.profile div{background:var(--surface);padding:12px 14px;min-width:0}
+.profile dt{font-family:var(--f-mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.profile dd{margin:2px 0 0;font-weight:500}
+.summary{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:20px;align-items:start}
+@media (max-width:760px){.summary{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px;min-width:0}
+.score-row{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:12px}
+.big{font-family:var(--f-mono);font-size:2.2rem;font-weight:500;line-height:1;font-variant-numeric:tabular-nums}
+.big small{font-size:.9rem;color:var(--muted)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.8rem;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:18px;height:0;border-top:3px solid var(--accent);vertical-align:middle;margin-right:6px}
+.legend i.t{border-top:2px dashed var(--target)}
+svg.radar{width:100%;height:auto;display:block;max-width:420px;margin:0 auto}
+.radar .ring{fill:none;stroke:var(--line);stroke-width:1}
+.radar .axis{stroke:var(--line);stroke-width:1}
+.radar .lab{fill:var(--fg);font-family:var(--f-body);font-size:11.5px}
+.radar .tick{fill:var(--muted);font-family:var(--f-mono);font-size:9px}
+.radar .cur{fill:var(--accent);fill-opacity:.22;stroke:var(--accent);stroke-width:2}
+.radar .tgt{fill:none;stroke:var(--target);stroke-width:1.6;stroke-dasharray:5 4}
+.radar .dot{fill:var(--accent)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:480px;font-size:.88rem}
+th{font-family:var(--f-mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:left;font-weight:500;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.num,th.num{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+.bar{height:6px;border-radius:3px;background:var(--line);position:relative;min-width:70px}
+.bar b{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--accent)}
+.bar u{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--target)}
+.pill{display:inline-block;font-size:.72rem;font-weight:600;padding:2px 9px;border-radius:99px;white-space:nowrap}
+.pill.good{background:var(--good-bg);color:var(--good)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.crit{background:var(--crit-bg);color:var(--crit)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.tabs button{font:inherit;font-size:.88rem;font-weight:500;padding:8px 14px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.tabs button:focus-visible,input[type=range]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.domain-head{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.domain-head p{max-width:70ch;color:var(--muted)}
+.ind{display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,230px) 78px;gap:6px 16px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.ind:last-of-type{border-bottom:0}
+.ind .name{font-weight:500}
+.ind .evid{font-size:.82rem;color:var(--muted)}
+.ind .lvl{font-family:var(--f-mono);font-size:.8rem;text-align:right;font-variant-numeric:tabular-nums}
+.ind input{width:100%;accent-color:var(--accent)}
+@media (max-width:620px){.ind{grid-template-columns:minmax(0,1fr) 70px}.ind input{grid-column:1 / -1;grid-row:2}}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-top:20px}
+.two ul{margin:8px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.rec li span{font-family:var(--f-mono);font-size:.7rem;text-transform:uppercase;color:var(--target);margin-right:6px}
+.scale{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;font-size:.82rem}
+.scale div{border-left:2px solid var(--accent);padding-left:10px}
+.scale b{font-family:var(--f-mono);font-weight:500}
+footer{font-size:.8rem;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">Tugas Kuliah · Tata Kelola Teknologi Informasi</span>
+  <h1>Analisis Tata Kelola TI pada PT Nusantara Cloudtech</h1>
+  <p class="lead">Asesmen lima area fokus tata kelola TI: strategic alignment, value delivery, risk management, resource management, dan performance measurement. Geser skor tiap indikator untuk melihat radar dan prioritas perbaikan berubah.</p>
+  <p class="notice">Perusahaan, angka, dan temuan pada halaman ini fiktif dan dibuat untuk simulasi tugas. Tidak mewakili perusahaan sebenarnya.</p>
+  <dl class="profile">
+    <div><dt>Perusahaan</dt><dd>PT Nusantara Cloudtech (dummy)</dd></div>
+    <div><dt>Bidang</dt><dd>Penyedia SaaS manajemen sekolah</dd></div>
+    <div><dt>Skala</dt><dd>120 karyawan · 38 tim TI & produk</dd></div>
+    <div><dt>Periode asesmen</dt><dd>Semester ganjil 2026</dd></div>
+  </dl>
+</header>
+
+<section class="summary" aria-label="Ringkasan">
+  <div class="panel">
+    <div class="score-row">
+      <div><div class="eyebrow">Maturity rata-rata</div><div class="big"><span id="avgCur">0</span><small> / 5</small></div></div>
+      <div><div class="eyebrow">Target</div><div class="big"><span id="avgTgt">0</span><small> / 5</small></div></div>
+      <div><div class="eyebrow">Gap terbesar</div><div class="big" style="font-size:1.1rem;line-height:1.3;padding-top:6px" id="topGap">-</div></div>
+    </div>
+    <svg class="radar" id="radar" viewBox="0 0 400 340" role="img" aria-label="Radar maturity lima domain"></svg>
+    <div class="legend"><span><i></i>Kondisi saat ini</span><span><i class="t"></i>Target</span></div>
+  </div>
+  <div class="panel">
+    <h2 style="margin-bottom:10px">Skor per domain</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Domain</th><th class="num">Saat ini</th><th class="num">Target</th><th>Posisi</th><th>Status</th></tr></thead>
+        <tbody id="domainRows"></tbody>
+      </table>
+    </div>
+    <p class="muted" style="font-size:.8rem;margin-top:10px">Skor domain adalah rata-rata indikator. Status: gap ≤ 0,5 selaras, ≤ 1,0 perlu perhatian, di atas itu prioritas.</p>
+  </div>
+</section>
+
+<section aria-label="Detail domain">
+  <h2 style="margin-bottom:14px">Detail per domain</h2>
+  <div class="tabs" role="tablist" id="tabs"></div>
+  <div class="panel" id="detail" role="tabpanel"></div>
+</section>
+
+<section class="panel">
+  <h2 style="margin-bottom:12px">Skala maturity yang dipakai</h2>
+  <div class="scale">
+    <div><b>1 Initial</b><br>Dilakukan ad hoc, belum ada aturan.</div>
+    <div><b>2 Repeatable</b><br>Ada praktik berulang, belum terdokumentasi.</div>
+    <div><b>3 Defined</b><br>Proses terdokumentasi dan distandarkan.</div>
+    <div><b>4 Managed</b><br>Proses diukur dan dipantau dengan metrik.</div>
+    <div><b>5 Optimized</b><br>Diperbaiki terus-menerus berdasarkan data.</div>
+  </div>
+</section>
+
+<footer>Kerangka: lima area fokus tata kelola TI (IT Governance Institute) dengan skala kematangan ala COBIT. Data bersifat simulasi. Dibuat oleh Nadia Aulia dengan bantuan AI (Claude).</footer>
+</div>
+
+<script>
+var LEVELS=['','Initial','Repeatable','Defined','Managed','Optimized'];
+var D=[
+{id:'sa',name:'Strategic Alignment',short:['Strategic','Alignment'],
+ desc:'Sejauh mana strategi dan portofolio TI mendukung tujuan bisnis perusahaan, yaitu menjadi platform sekolah digital yang andal di Indonesia.',
+ ind:[
+  {n:'Keselarasan roadmap TI dengan strategi bisnis',e:'Roadmap produk 2026 ada, tetapi disusun terpisah dari rencana pertumbuhan pelanggan.',c:3,t:4},
+  {n:'Keterlibatan manajemen bisnis dalam perencanaan TI',e:'Komite TI bertemu per semester, kehadiran unit bisnis belum konsisten.',c:3,t:4},
+  {n:'Pemetaan layanan TI ke tujuan bisnis',e:'Katalog layanan belum memuat kaitan ke sasaran bisnis.',c:2,t:4},
+  {n:'Tinjauan strategi TI secara berkala',e:'Ditinjau setahun sekali, belum ada pemicu tinjauan saat pasar berubah.',c:3,t:4}],
+ find:['Roadmap TI dan rencana bisnis disusun oleh tim yang berbeda sehingga prioritas fitur sering bergeser.','Katalog layanan tidak menunjukkan layanan mana yang mendukung target pendapatan.'],
+ rec:[['Tinggi','Susun peta keselarasan tujuan bisnis ke layanan TI dan perbarui tiap kuartal.'],['Sedang','Libatkan kepala unit bisnis dalam setiap sesi perencanaan roadmap.']]},
+{id:'vd',name:'Value Delivery',short:['Value','Delivery'],
+ desc:'Kemampuan TI memberikan manfaat yang dijanjikan: proyek berbasis business case, manfaat dilacak, dan kualitas layanan dirasakan pengguna.',
+ ind:[
+  {n:'Pengelolaan portofolio proyek dan business case',e:'Proyek besar memiliki business case, proyek kecil belum.',c:3,t:4},
+  {n:'Pelacakan realisasi manfaat proyek',e:'Manfaat dihitung saat perencanaan, jarang dibandingkan setelah rilis.',c:2,t:4},
+  {n:'Kepuasan pengguna layanan',e:'Survei kepuasan sekolah pelanggan dilakukan tiap kuartal, skor stabil.',c:4,t:4},
+  {n:'Kecepatan rilis fitur ke pelanggan',e:'Rilis rutin dua minggu sekali, tetapi hambatan lintas tim masih sering.',c:3,t:4}],
+ find:['Kepuasan pelanggan sudah baik, namun manfaat proyek setelah rilis tidak diukur.','Proyek kecil berjalan tanpa business case sehingga sulit diprioritaskan.'],
+ rec:[['Tinggi','Tetapkan tinjauan manfaat 90 hari setelah rilis untuk setiap proyek di atas batas biaya tertentu.'],['Sedang','Buat business case ringkas satu halaman untuk proyek kecil.']]},
+{id:'rm',name:'Risk Management',short:['Risk','Management'],
+ desc:'Kesadaran dan pengelolaan risiko TI, mencakup keamanan informasi, kelangsungan layanan, dan kepatuhan terhadap regulasi seperti UU Pelindungan Data Pribadi.',
+ ind:[
+  {n:'Identifikasi dan register risiko TI',e:'Register risiko ada, diperbarui tidak teratur.',c:3,t:4},
+  {n:'Keamanan informasi',e:'Kebijakan keamanan ada, uji penetrasi baru dilakukan sekali.',c:3,t:4},
+  {n:'Kelangsungan bisnis dan pemulihan bencana',e:'Backup harian berjalan, simulasi pemulihan belum pernah diuji penuh.',c:2,t:4},
+  {n:'Kepatuhan regulasi pelindungan data pribadi',e:'Data siswa dikelola tanpa pemetaan data pribadi yang lengkap.',c:2,t:4}],
+ find:['Rencana pemulihan bencana belum diuji sehingga waktu pemulihan sebenarnya tidak diketahui.','Data pribadi siswa belum dipetakan, risiko kepatuhan tinggi karena pelanggan adalah sekolah.'],
+ rec:[['Tinggi','Lakukan simulasi pemulihan bencana dan catat RTO dan RPO aktual.'],['Tinggi','Petakan seluruh data pribadi siswa dan tunjuk penanggung jawab pelindungan data.'],['Sedang','Jadwalkan uji penetrasi tahunan.']]},
+{id:'rs',name:'Resource Management',short:['Resource','Management'],
+ desc:'Pemanfaatan sumber daya TI secara optimal: SDM, infrastruktur cloud, vendor, dan pengetahuan organisasi.',
+ ind:[
+  {n:'Kompetensi dan pengembangan SDM TI',e:'Pelatihan tersedia, belum terhubung dengan peta kompetensi.',c:3,t:4},
+  {n:'Pengelolaan infrastruktur cloud dan aset',e:'Biaya cloud dipantau bulanan, ada sumber daya tidak terpakai.',c:3,t:4},
+  {n:'Pengelolaan vendor dan pihak ketiga',e:'Kontrak vendor dikelola per tim tanpa daftar terpusat.',c:2,t:4},
+  {n:'Dokumentasi dan manajemen pengetahuan',e:'Pengetahuan banyak tersimpan di individu, dokumentasi tidak merata.',c:2,t:3}],
+ find:['Ketergantungan pada beberapa engineer senior karena dokumentasi minim.','Biaya cloud naik tanpa kaitan jelas dengan pertumbuhan pelanggan.'],
+ rec:[['Tinggi','Buat daftar vendor terpusat berisi nilai kontrak, SLA, dan tanggal berakhir.'],['Sedang','Terapkan tinjauan biaya cloud bulanan dan matikan sumber daya yang tidak terpakai.'],['Sedang','Wajibkan dokumentasi runbook untuk setiap layanan produksi.']]},
+{id:'pm',name:'Performance Measurement',short:['Performance','Measurement'],
+ desc:'Pelacakan dan pelaporan kinerja TI: KPI, pemenuhan SLA, pelaporan ke manajemen, dan audit berkala.',
+ ind:[
+  {n:'Penetapan KPI dan IT balanced scorecard',e:'KPI tersedia per tim, belum ada scorecard yang menyatukan.',c:2,t:4},
+  {n:'Pemantauan SLA layanan',e:'Uptime dipantau otomatis, SLA tiket dukungan masih manual.',c:3,t:4},
+  {n:'Pelaporan kinerja TI ke manajemen',e:'Laporan dibuat ad hoc saat diminta.',c:2,t:4},
+  {n:'Audit dan tinjauan kinerja berkala',e:'Belum ada audit TI internal terjadwal.',c:2,t:4}],
+ find:['Manajemen tidak menerima laporan kinerja TI secara rutin.','Tidak ada audit internal yang memeriksa konsistensi proses TI.'],
+ rec:[['Tinggi','Rancang IT balanced scorecard dengan empat perspektif dan laporkan tiap bulan.'],['Sedang','Jadwalkan audit TI internal minimal setahun sekali.']]}
+];
+var active=0, NS='http://www.w3.org/2000/svg';
+function avg(a){return a.reduce(function(s,x){return s+x},0)/a.length}
+function dc(d){return avg(d.ind.map(function(i){return i.c}))}
+function dt(d){return avg(d.ind.map(function(i){return i.t}))}
+function f(x){return x.toFixed(1).replace('.',',')}
+function status(g){return g<=0.5?['good','Selaras']:g<=1.0?['warn','Perlu perhatian']:['crit','Prioritas']}
+function el(n,a,t){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);if(t!=null)e.textContent=t;return e}
+
+function radar(){
+  var s=document.getElementById('radar');s.innerHTML='';
+  var cx=200,cy=170,R=110,n=D.length;
+  function pt(i,v){var a=-Math.PI/2+i*2*Math.PI/n;return [cx+R*v/5*Math.cos(a),cy+R*v/5*Math.sin(a)]}
+  for(var r=1;r<=5;r++){
+    s.appendChild(el('polygon',{class:'ring',points:D.map(function(_,i){return pt(i,r).join(',')}).join(' ')}));
+    s.appendChild(el('text',{class:'tick',x:cx+4,y:cy-R*r/5+3},r));
+  }
+  D.forEach(function(d,i){
+    var p=pt(i,5);s.appendChild(el('line',{class:'axis',x1:cx,y1:cy,x2:p[0],y2:p[1]}));
+    var q=pt(i,5.9),dx=q[0]-cx,anch=Math.abs(dx)<8?'middle':dx>0?'start':'end';
+    var t=el('text',{class:'lab',x:q[0],y:q[1]-4,'text-anchor':anch});
+    d.short.forEach(function(w,k){var ts=el('tspan',{x:q[0],dy:k?13:0},w);t.appendChild(ts)});
+    s.appendChild(t);
+  });
+  s.appendChild(el('polygon',{class:'tgt',points:D.map(function(d,i){return pt(i,dt(d)).join(',')}).join(' ')}));
+  s.appendChild(el('polygon',{class:'cur',points:D.map(function(d,i){return pt(i,dc(d)).join(',')}).join(' ')}));
+  D.forEach(function(d,i){var p=pt(i,dc(d));s.appendChild(el('circle',{class:'dot',cx:p[0],cy:p[1],r:3.5}))});
+}
+
+function summary(){
+  var c=avg(D.map(dc)),t=avg(D.map(dt));
+  document.getElementById('avgCur').textContent=f(c);
+  document.getElementById('avgTgt').textContent=f(t);
+  var top=D.slice().sort(function(a,b){return (dt(b)-dc(b))-(dt(a)-dc(a))})[0];
+  document.getElementById('topGap').textContent=top.name+' (−'+f(dt(top)-dc(top))+')';
+  document.getElementById('domainRows').innerHTML=D.map(function(d,i){
+    var g=dt(d)-dc(d),st=status(g);
+    return '<tr><td>'+d.name+'</td><td class="num">'+f(dc(d))+'</td><td class="num">'+f(dt(d))+'</td>'+
+    '<td><div class="bar" aria-hidden="true"><b style="width:'+(dc(d)/5*100)+'%"></b><u style="left:'+(dt(d)/5*100)+'%"></u></div></td>'+
+    '<td><span class="pill '+st[0]+'">'+st[1]+'</span></td></tr>';
+  }).join('');
+  radar();
+}
+
+function tabs(){
+  var t=document.getElementById('tabs');t.innerHTML='';
+  D.forEach(function(d,i){
+    var b=document.createElement('button');b.type='button';b.id='tab-'+d.id;b.setAttribute('role','tab');
+    b.setAttribute('aria-selected',i===active);b.textContent=d.name;
+    b.onclick=function(){active=i;tabs();detail()};t.appendChild(b);
+  });
+}
+
+function detail(){
+  var d=D[active],g=dt(d)-dc(d),st=status(g);
+  var h='<div class="domain-head"><span class="eyebrow">Domain '+(active+1)+' dari 5</span><h3>'+d.name+' <span class="pill '+st[0]+'" id="dpill" style="vertical-align:middle;margin-left:6px">'+st[1]+'</span></h3><p>'+d.desc+'</p></div>';
+  h+='<div class="eyebrow" style="margin-bottom:4px">Indikator (geser untuk mengubah skor saat ini)</div>';
+  d.ind.forEach(function(x,i){
+    h+='<div class="ind"><div><div class="name">'+x.n+'</div><div class="evid">'+x.e+'</div></div>'+
+    '<input type="range" min="1" max="5" step="1" value="'+x.c+'" id="r'+i+'" aria-label="Skor '+x.n+'" data-i="'+i+'">'+
+    '<div class="lvl" id="l'+i+'">'+x.c+' '+LEVELS[x.c]+'<br><span class="muted">target '+x.t+'</span></div></div>';
+  });
+  h+='<div class="two"><div><h3>Temuan</h3><ul>'+d.find.map(function(x){return '<li>'+x+'</li>'}).join('')+'</ul></div>'+
+     '<div class="rec"><h3>Rekomendasi</h3><ul>'+d.rec.map(function(x){return '<li><span>'+x[0]+'</span>'+x[1]+'</li>'}).join('')+'</ul></div></div>';
+  var p=document.getElementById('detail');p.innerHTML=h;p.setAttribute('aria-labelledby','tab-'+d.id);
+  p.querySelectorAll('input[type=range]').forEach(function(inp){
+    inp.oninput=function(){
+      var i=+inp.dataset.i,v=+inp.value;d.ind[i].c=v;
+      document.getElementById('l'+i).innerHTML=v+' '+LEVELS[v]+'<br><span class="muted">target '+d.ind[i].t+'</span>';
+      var s2=status(dt(d)-dc(d)),pl=document.getElementById('dpill');pl.className='pill '+s2[0];pl.textContent=s2[1];
+      summary();
+    };
+  });
+}
+summary();tabs();detail();
+</script>
+
+</body>
+</html>
